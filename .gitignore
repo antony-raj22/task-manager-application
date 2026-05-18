@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.sqlite3
+
+# Django
+backend/.env
+backend/staticfiles/
+
+# Node
+node_modules/
+.next/
+out/
+frontend/.env.local
+*.log
+
+# System
+.DS_Store
+Thumbs.db
