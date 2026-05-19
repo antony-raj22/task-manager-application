@@ -18,3 +18,8 @@ class IsAdminOrAssignedReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return is_admin_user(request.user) or obj.assigned_to_id == request.user.id
         return is_admin_user(request.user)
+
+
+class IsAdminUserRole(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return is_admin_user(request.user)

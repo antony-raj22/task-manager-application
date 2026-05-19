@@ -33,6 +33,21 @@ python manage.py runserver
 
 The API runs at `http://127.0.0.1:8000/api/`.
 
+## SMTP Notifications
+
+Task assignment and completion notifications are saved inside the app. If SMTP values are configured in `.env`, the app also sends email notifications.
+
+For Gmail, create an app password and set:
+
+```env
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=Task Manager <your-email@gmail.com>
+```
+
 ## Roles
 
 - A Django superuser or staff user is treated as an admin.

@@ -30,3 +30,24 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Notification(models.Model):
+    class Kind(models.TextChoices):
+        TASK_ASSIGNED = "TASK_ASSIGNED", "Task assigned"
+        TASK_COMPLETED = "TASK_COMPLETED", "Task completed"
+
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notifications")
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="sent_notifications")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="notifications")
+    kind = models.CharField(max_length=30, choices=Kind.choices)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title

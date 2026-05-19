@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.serializers import UserSerializer
-from .models import Task
+from .models import Notification, Task
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -27,3 +27,25 @@ class TaskSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = ("created_by", "completed_at", "created_at", "updated_at")
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    actor_detail = UserSerializer(source="actor", read_only=True)
+    task_detail = TaskSerializer(source="task", read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = (
+            "id",
+            "recipient",
+            "actor",
+            "actor_detail",
+            "task",
+            "task_detail",
+            "kind",
+            "title",
+            "message",
+            "read_at",
+            "created_at",
+        )
+        read_only_fields = fields

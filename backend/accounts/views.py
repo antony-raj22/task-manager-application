@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from .models import Profile
 from .serializers import UserSerializer
+from tasks.permissions import IsAdminUserRole
 
 
 class GoogleLoginView(APIView):
@@ -58,6 +59,8 @@ class MeView(APIView):
 
 
 class MembersView(APIView):
+    permission_classes = [IsAdminUserRole]
+
     def get(self, request):
         users = User.objects.filter(is_active=True).order_by("first_name", "username")
         return Response(UserSerializer(users, many=True).data)
