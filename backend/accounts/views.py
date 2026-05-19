@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Profile
-from .serializers import UserSerializer
-from tasks.permissions import IsAdminUserRole
+from .serializers import CompanyUserCreateSerializer, CompanyUserUpdateSerializer, UserSerializer
+from tasks.permissions import IsAdminOrTLRole, IsAdminUserRole, is_admin_user, is_tl_user
 
 
 class GoogleLoginView(APIView):
@@ -38,16 +38,26 @@ class GoogleLoginView(APIView):
         if not email:
             return Response({"detail": "Google account has no email."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                "username": email,
-                "first_name": payload.get("given_name", ""),
-                "last_name": payload.get("family_name", ""),
-            },
-        )
-        if created:
-            Profile.objects.get_or_create(user=user, defaults={"role": Profile.Role.MEMBER})
+        try:
+            user = User.objects.get(email=email, is_active=True)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Access denied. Ask the admin to add your company account first."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        Profile.objects.get_or_create(user=user, defaults={"role": Profile.Role.MEMBER})
+        updated_fields = []
+        first_name = payload.get("given_name", "")
+        last_name = payload.get("family_name", "")
+        if first_name and not user.first_name:
+            user.first_name = first_name
+            updated_fields.append("first_name")
+        if last_name and not user.last_name:
+            user.last_name = last_name
+            updated_fields.append("last_name")
+        if updated_fields:
+            user.save(update_fields=updated_fields)
 
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "user": UserSerializer(user).data})
@@ -59,8 +69,37 @@ class MeView(APIView):
 
 
 class MembersView(APIView):
-    permission_classes = [IsAdminUserRole]
+    permission_classes = [IsAdminOrTLRole]
 
     def get(self, request):
-        users = User.objects.filter(is_active=True).order_by("first_name", "username")
+        users = User.objects.order_by("first_name", "username")
+        if is_tl_user(request.user) and not is_admin_user(request.user):
+            users = users.filter(is_active=True, teams__lead=request.user).distinct()
         return Response(UserSerializer(users, many=True).data)
+
+
+class CompanyUsersView(APIView):
+    permission_classes = [IsAdminUserRole]
+
+    def post(self, request):
+        serializer = CompanyUserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+class CompanyUserDetailView(APIView):
+    permission_classes = [IsAdminUserRole]
+
+    def patch(self, request, pk):
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Company user not found."}, status=status.HTTP_404_NOT_FOUND)
+        if user.is_staff or user.is_superuser:
+            return Response({"detail": "Admin users must be edited in Django admin."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CompanyUserUpdateSerializer(user, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        updated_user = serializer.save()
+        return Response(UserSerializer(updated_user).data)

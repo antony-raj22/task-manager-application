@@ -3,10 +3,39 @@ from django.utils import timezone
 from rest_framework import decorators, permissions, response, status, viewsets
 from rest_framework.views import APIView
 
-from .models import Notification, Task
-from .permissions import IsAdminOrAssignedReadOnly, IsAdminUserRole, is_admin_user
-from .serializers import NotificationSerializer, TaskSerializer
+from .models import Notification, Project, Task, Team
+from .permissions import (
+    IsAdminOrAssignedReadOnly,
+    IsAdminUserRole,
+    IsAdminWriteAdminOrTLRead,
+    can_manage_work,
+    is_admin_user,
+    is_tl_user,
+)
+from .serializers import NotificationSerializer, ProjectSerializer, TaskSerializer, TeamSerializer
 from .services import create_notification
+
+
+class TeamViewSet(viewsets.ModelViewSet):
+    serializer_class = TeamSerializer
+    permission_classes = [IsAdminUserRole]
+
+    def get_queryset(self):
+        return Team.objects.select_related("lead").prefetch_related("members")
+
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAdminWriteAdminOrTLRead]
+
+    def get_queryset(self):
+        queryset = Project.objects.select_related("team", "team__lead", "created_by").prefetch_related("team__members")
+        if is_admin_user(self.request.user):
+            return queryset
+        return queryset.filter(team__lead=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -15,9 +44,11 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Task.objects.select_related("assigned_to", "created_by")
+        queryset = Task.objects.select_related("assigned_to", "created_by", "project", "project__team", "project__team__lead")
         if is_admin_user(user):
             return queryset
+        if is_tl_user(user):
+            return queryset.filter(project__team__lead=user) | queryset.filter(assigned_to=user) | queryset.filter(created_by=user)
         return queryset.filter(assigned_to=user)
 
     def perform_create(self, serializer):
@@ -30,6 +61,20 @@ class TaskViewSet(viewsets.ModelViewSet):
             title=f"New task assigned: {task.title}",
             message=f"{self.request.user.get_full_name() or self.request.user.username} assigned you a task due on {task.due_date}.",
         )
+
+    @decorators.action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def set_status(self, request, pk=None):
+        task = self.get_object()
+        new_status = request.data.get("status")
+        if new_status not in Task.Status.values:
+            return response.Response({"detail": "Invalid task status."}, status=status.HTTP_400_BAD_REQUEST)
+        if not can_manage_work(request.user) and task.assigned_to_id != request.user.id:
+            return response.Response({"detail": "You cannot update this task."}, status=status.HTTP_403_FORBIDDEN)
+
+        task.status = new_status
+        task.completed_at = timezone.now() if new_status == Task.Status.COMPLETED else None
+        task.save(update_fields=["status", "completed_at", "updated_at"])
+        return response.Response(TaskSerializer(task, context={"request": request}).data)
 
     @decorators.action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def complete(self, request, pk=None):
@@ -48,7 +93,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             title=f"Task completed: {task.title}",
             message=f"{request.user.get_full_name() or request.user.username} completed the task.",
         )
-        return response.Response(TaskSerializer(task).data)
+        return response.Response(TaskSerializer(task, context={"request": request}).data)
 
 
 class CalendarTaskView(APIView):

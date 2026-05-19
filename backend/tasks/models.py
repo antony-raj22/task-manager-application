@@ -2,6 +2,35 @@ from django.conf import settings
 from django.db import models
 
 
+class Team(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    lead = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="leading_teams")
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="teams")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=160)
+    description = models.TextField(blank=True)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="projects")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="created_projects")
+    start_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Task(models.Model):
     class Status(models.TextChoices):
         TODO = "TODO", "To do"
@@ -15,6 +44,7 @@ class Task(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True, related_name="tasks")
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="assigned_tasks")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_tasks")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.TODO)

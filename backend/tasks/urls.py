@@ -1,10 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import AdminSummaryView, CalendarTaskView, NotificationViewSet, TaskViewSet
+from .views import AdminSummaryView, CalendarTaskView, NotificationViewSet, ProjectViewSet, TaskViewSet, TeamViewSet
 
 
 router = DefaultRouter()
+router.register("teams", TeamViewSet, basename="teams")
+router.register("projects", ProjectViewSet, basename="projects")
 router.register("tasks", TaskViewSet, basename="tasks")
 router.register("notifications", NotificationViewSet, basename="notifications")
 

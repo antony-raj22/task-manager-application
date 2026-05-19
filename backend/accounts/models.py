@@ -5,6 +5,7 @@ from django.db import models
 class Profile(models.Model):
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
+        TL = "TL", "Team lead"
         MEMBER = "MEMBER", "Member"
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")

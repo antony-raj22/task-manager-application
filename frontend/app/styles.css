@@ -111,6 +111,11 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.account strong {
+  color: var(--brand-dark);
+  font-size: 0.78rem;
+}
+
 .icon-button {
   width: 36px;
   height: 36px;
@@ -162,6 +167,13 @@ button:disabled {
 .workspace {
   display: grid;
   grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(320px, 420px) 1fr;
   gap: 20px;
   align-items: flex-start;
 }
@@ -258,6 +270,10 @@ textarea {
   resize: vertical;
 }
 
+select[multiple] {
+  min-height: 128px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -327,6 +343,50 @@ textarea {
   background: #fbfcfc;
 }
 
+.staff-list {
+  display: grid;
+  gap: 12px;
+}
+
+.staff-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fbfcfc;
+}
+
+.staff-card form {
+  width: 100%;
+}
+
+.staff-card h3,
+.staff-card p {
+  margin: 0 0 6px;
+}
+
+.staff-card p {
+  color: var(--muted);
+}
+
+.checkbox-row {
+  align-content: center;
+  grid-template-columns: auto 1fr;
+  min-height: 42px;
+  margin-top: 24px;
+}
+
+.checkbox-row input {
+  width: auto;
+}
+
+.compact-button {
+  width: auto;
+}
+
 .notification-card.unread {
   border-color: rgba(11, 118, 103, 0.35);
   background: #f0f7f4;
@@ -362,12 +422,50 @@ textarea {
   color: var(--muted);
 }
 
+.project-name {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   color: var(--muted);
   font-size: 0.84rem;
+}
+
+.progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6ebe8;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.progress-fill.todo {
+  background: #d58a4a;
+}
+
+.progress-fill.in_progress {
+  background: #2f82aa;
+}
+
+.progress-fill.completed {
+  background: #1d8d67;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .meta span {
@@ -455,7 +553,8 @@ textarea {
 
 @media (max-width: 900px) {
   .topbar,
-  .workspace {
+  .workspace,
+  .dashboard-grid {
     grid-template-columns: 1fr;
   }
 

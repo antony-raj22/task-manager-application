@@ -6,13 +6,39 @@ export type AppUser = {
   last_name: string;
   full_name: string;
   is_staff: boolean;
-  role: "ADMIN" | "MEMBER";
+  is_active: boolean;
+  role: "ADMIN" | "TL" | "MEMBER";
+};
+
+export type Team = {
+  id: number;
+  name: string;
+  lead: number;
+  lead_detail: AppUser;
+  members: number[];
+  members_detail: AppUser[];
+  created_at: string;
+};
+
+export type Project = {
+  id: number;
+  name: string;
+  description: string;
+  team: number;
+  team_detail: Team;
+  created_by: number;
+  created_by_detail: AppUser;
+  start_date: string | null;
+  due_date: string | null;
+  created_at: string;
 };
 
 export type Task = {
   id: number;
   title: string;
   description: string;
+  project: number | null;
+  project_detail: Project | null;
   assigned_to: number;
   assigned_to_detail: AppUser;
   created_by: number;
