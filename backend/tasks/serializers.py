@@ -26,6 +26,8 @@ class TeamSerializer(serializers.ModelSerializer):
         return lead
 
     def validate_members(self, members):
+        if len(members) < 4:
+            raise serializers.ValidationError("Select at least 4 members for a team.")
         invalid = [member.email or member.username for member in members if user_role(member) != "MEMBER"]
         if invalid:
             raise serializers.ValidationError(f"Only MEMBER users can be team members: {', '.join(invalid)}")
