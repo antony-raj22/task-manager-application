@@ -21,7 +21,7 @@ import type React from "react";
 import { api, clearToken, getToken, setToken } from "./services/api";
 import type { AdminSummary, AppUser, Notification, Project, Task, Team } from "./services/types";
 
-type View = "dashboard" | "tasks" | "calendar" | "notifications";
+type View = "dashboard" | "staff" | "tasks" | "calendar" | "notifications";
 
 const emptyTaskForm = {
   title: "",
@@ -268,6 +268,12 @@ export default function Home() {
             Workspace
           </button>
         )}
+        {isAdmin && (
+          <button className={view === "staff" ? "active" : ""} onClick={() => setView("staff")}>
+            <UserPlus size={16} />
+            Staff
+          </button>
+        )}
         <button className={view === "tasks" ? "active" : ""} onClick={() => setView("tasks")}>
           <ClipboardList size={16} />
           Tasks
@@ -293,19 +299,25 @@ export default function Home() {
           tasks={tasks}
           summary={summary}
           teamForm={teamForm}
-          staffForm={staffForm}
           projectForm={projectForm}
           taskForm={taskForm}
           setTeamForm={setTeamForm}
-          setStaffForm={setStaffForm}
           setProjectForm={setProjectForm}
           setTaskForm={setTaskForm}
-          createStaff={createStaff}
-          updateStaff={updateStaff}
           createTeam={createTeam}
           createProject={createProject}
           createTask={createTask}
           updateStatus={updateStatus}
+        />
+      )}
+
+      {view === "staff" && isAdmin && (
+        <StaffAdminPage
+          users={users}
+          staffForm={staffForm}
+          setStaffForm={setStaffForm}
+          createStaff={createStaff}
+          updateStaff={updateStaff}
         />
       )}
 
@@ -337,15 +349,11 @@ function AdminDashboard(props: {
   tasks: Task[];
   summary: AdminSummary | null;
   teamForm: typeof emptyTeamForm;
-  staffForm: typeof emptyStaffForm;
   projectForm: typeof emptyProjectForm;
   taskForm: typeof emptyTaskForm;
   setTeamForm: (form: typeof emptyTeamForm) => void;
-  setStaffForm: (form: typeof emptyStaffForm) => void;
   setProjectForm: (form: typeof emptyProjectForm) => void;
   setTaskForm: (form: typeof emptyTaskForm) => void;
-  createStaff: (event: FormEvent<HTMLFormElement>) => void;
-  updateStaff: (staffId: number, form: typeof emptyStaffEditForm) => Promise<void>;
   createTeam: (event: FormEvent<HTMLFormElement>) => void;
   createProject: (event: FormEvent<HTMLFormElement>) => void;
   createTask: (event: FormEvent<HTMLFormElement>) => void;
@@ -365,8 +373,6 @@ function AdminDashboard(props: {
           <Metric icon={<CheckCircle2 size={18} />} label="Completed" value={props.summary?.completed_tasks ?? 0} />
           <Metric icon={<UsersRound size={18} />} label="Members" value={members.length} />
         </section>
-        <StaffForm form={props.staffForm} setForm={props.setStaffForm} onSubmit={props.createStaff} />
-        <StaffList users={props.users} updateStaff={props.updateStaff} />
         <TeamForm users={members} tls={tls} form={props.teamForm} setForm={props.setTeamForm} onSubmit={props.createTeam} />
       </div>
       <div className="admin-stack">
@@ -382,6 +388,27 @@ function AdminDashboard(props: {
         />
       </div>
       <TaskList tasks={props.tasks} canUpdateStatus updateStatus={props.updateStatus} compact />
+    </section>
+  );
+}
+
+function StaffAdminPage({
+  users,
+  staffForm,
+  setStaffForm,
+  createStaff,
+  updateStaff,
+}: {
+  users: AppUser[];
+  staffForm: typeof emptyStaffForm;
+  setStaffForm: (form: typeof emptyStaffForm) => void;
+  createStaff: (event: FormEvent<HTMLFormElement>) => void;
+  updateStaff: (staffId: number, form: typeof emptyStaffEditForm) => Promise<void>;
+}) {
+  return (
+    <section className="staff-page">
+      <StaffForm form={staffForm} setForm={setStaffForm} onSubmit={createStaff} />
+      <StaffList users={users} updateStaff={updateStaff} />
     </section>
   );
 }
@@ -606,19 +633,33 @@ function TeamForm({
       </label>
       <label>
         Team members
-        <select
-          multiple
-          value={form.members}
-          onChange={(event) => setForm({ ...form, members: Array.from(event.target.selectedOptions, (option) => option.value) })}
-          required
-        >
-          {users.map((member) => (
-            <option key={member.id} value={member.id}>
-              {member.full_name}
-            </option>
-          ))}
-        </select>
+        <span className="field-hint">{form.members.length} selected, minimum 4</span>
       </label>
+      <div className="member-picker">
+        {users.map((member) => {
+          const memberId = String(member.id);
+          const checked = form.members.includes(memberId);
+          return (
+            <label className="member-option" key={member.id}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={(event) => {
+                  const nextMembers = event.target.checked
+                    ? [...form.members, memberId]
+                    : form.members.filter((selectedId) => selectedId !== memberId);
+                  setForm({ ...form, members: nextMembers });
+                }}
+              />
+              <span>
+                <strong>{member.full_name}</strong>
+                <small>{member.email}</small>
+              </span>
+            </label>
+          );
+        })}
+        {!users.length && <p className="muted">Add member staff before creating a team.</p>}
+      </div>
       <button className="primary-button" type="submit">
         Create team
       </button>

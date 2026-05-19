@@ -178,6 +178,13 @@ button:disabled {
   align-items: flex-start;
 }
 
+.staff-page {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
 .admin-stack,
 .task-form,
 .task-list,
@@ -270,10 +277,6 @@ textarea {
   resize: vertical;
 }
 
-select[multiple] {
-  min-height: 128px;
-}
-
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -344,6 +347,11 @@ select[multiple] {
 }
 
 .staff-list {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 20px;
   display: grid;
   gap: 12px;
 }
@@ -370,6 +378,51 @@ select[multiple] {
 
 .staff-card p {
   color: var(--muted);
+}
+
+.field-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.member-picker {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfc;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+  margin: -4px 0 14px;
+}
+
+.member-option {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 8px;
+  border-radius: 6px;
+  color: var(--ink);
+}
+
+.member-option:hover {
+  background: var(--surface-2);
+}
+
+.member-option input {
+  width: auto;
+}
+
+.member-option span {
+  display: grid;
+  gap: 2px;
+}
+
+.member-option small {
+  color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .checkbox-row {
@@ -554,7 +607,8 @@ select[multiple] {
 @media (max-width: 900px) {
   .topbar,
   .workspace,
-  .dashboard-grid {
+  .dashboard-grid,
+  .staff-page {
     grid-template-columns: 1fr;
   }
 
