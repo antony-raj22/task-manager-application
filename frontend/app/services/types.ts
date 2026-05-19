@@ -25,3 +25,26 @@ export type Task = {
   created_at: string;
   updated_at: string;
 };
+
+export type Notification = {
+  id: number;
+  recipient: number;
+  actor: number | null;
+  actor_detail: AppUser | null;
+  task: number;
+  task_detail: Task;
+  kind: "TASK_ASSIGNED" | "TASK_COMPLETED";
+  title: string;
+  message: string;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type AdminSummary = {
+  total_tasks: number;
+  todo_tasks: number;
+  in_progress_tasks: number;
+  completed_tasks: number;
+  members: number;
+  unread_notifications: number;
+};

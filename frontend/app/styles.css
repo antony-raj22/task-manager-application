@@ -35,6 +35,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -117,6 +122,43 @@ button {
   color: var(--ink);
 }
 
+.app-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.app-tabs button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 42px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.app-tabs button.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #ffffff;
+}
+
+.badge {
+  min-width: 22px;
+  min-height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.75rem;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: 380px 1fr;
@@ -124,9 +166,11 @@ button {
   align-items: flex-start;
 }
 
+.admin-stack,
 .task-form,
 .task-list,
-.calendar-section {
+.calendar-section,
+.notification-section {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -141,9 +185,54 @@ button {
   margin-bottom: 18px;
 }
 
+.section-title.split {
+  justify-content: space-between;
+}
+
+.section-title.split span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .section-title h2 {
   margin: 0;
   font-size: 1.05rem;
+}
+
+.admin-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-stack .task-form {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfc;
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.metric-card span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.metric-card strong {
+  font-size: 1.7rem;
 }
 
 label {
@@ -212,6 +301,12 @@ textarea {
   gap: 12px;
 }
 
+.cards.compact {
+  max-height: 720px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
 .task-card {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -219,6 +314,36 @@ textarea {
   display: grid;
   gap: 12px;
   background: #fbfcfc;
+}
+
+.notification-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fbfcfc;
+}
+
+.notification-card.unread {
+  border-color: rgba(11, 118, 103, 0.35);
+  background: #f0f7f4;
+}
+
+.notification-card h3,
+.notification-card p {
+  margin: 0 0 6px;
+}
+
+.notification-card p,
+.notification-card span {
+  color: var(--muted);
+}
+
+.notification-card span {
+  font-size: 0.82rem;
 }
 
 .card-header {
@@ -274,7 +399,8 @@ textarea {
   color: #16704f;
 }
 
-.calendar-section {
+.calendar-section,
+.notification-section {
   margin-top: 20px;
 }
 

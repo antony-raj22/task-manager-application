@@ -18,6 +18,10 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+export function isAuthenticated() {
+  return Boolean(getToken());
+}
+
 export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const headers = new Headers(options.headers);
   headers.set("Content-Type", "application/json");
@@ -33,6 +37,9 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   });
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      clearToken();
+    }
     let message = "Request failed";
     try {
       const payload = await response.json();
